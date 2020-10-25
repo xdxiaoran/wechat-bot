@@ -1,0 +1,65 @@
+server:
+  port: 10000
+
+spring:
+  application:
+    name: @name@
+  datasource:
+    url: jdbc:mysql://192.168.1.2:3306/wechat_robot_1?useSSL=false&useUnicode=true&characterEncoding=utf-8&autoReconnect=true
+    username: root
+    password: 459999
+    driver-class-name: com.mysql.jdbc.Driver
+  jpa:
+    hibernate:
+      # Hibernate ddl auto
+      #   create          Create the schemaand destory previous data
+      #   validate        Validate the schema, make no changes to the databases
+      #   create-drop     DisableDDL handling
+      #   update           Update the schema if necessary
+      ddl-auto: update
+    # Show or not log for each sql query
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL5Dialect
+
+
+# close auto catch error page
+error:
+  whitelabel:
+    enabled: false
+
+
+logging:
+  config: classpath:logback-boot.xml
+endpoints:
+  health:
+    sensitive: false
+
+# document swagger config
+swagger:
+  name:  @name@
+  desc: @description@
+  version: @version@
+  termsOfServiceUrl:
+  basePackage: @groupId@
+  contact:
+    name: @description@
+    url: @description@
+    email: @description@
+
+config:
+  wechat:
+    url: '127.0.0.1:2222'
+schedule:
+  cron: '*/5 * * * * *'
+card:
+  mode: true
+  content: "<?xml version=\"1.0\"?><msg bigheadimgurl=\"%s\" smallheadimgurl=\"%s\" username=\"%s\" nickname=\"%s\" fullpy=\"aoliao\" shortpy=\"\" alias=\"19991203\" imagestatus=\"2\" scene=\"17\" province=\"中国\" city=\"中国\" sign=\"\" sex=\"1\" certflag=\"0\" certinfo=\"\" brandIconUrl=\"\" brandHomeUrl=\"\" brandSubscriptConfigUrl= \"\" brandFlags=\"0\" regionCode=\"德玛西亚工作室\" />"
+  bigheadimgurl: http://wx.qlogo.cn/mmhead/ver_1/s9D9J7qqBARTTXsRwGPnnQpfSFmdibOkK832BYG7y3nOuW1XmvsCdibtVqTdfbUJP6Pn2kyQtOLWxCt3fVClqxFXkniam7GgOALrlW4icMSliaMo/0
+  smallheadimgurl: http://wx.qlogo.cn/mmhead/ver_1/s9D9J7qqBARTTXsRwGPnnQpfSFmdibOkK832BYG7y3nOuW1XmvsCdibtVqTdfbUJP6Pn2kyQtOLWxCt3fVClqxFXkniam7GgOALrlW4icMSliaMo/0
+  # wxid
+  username: wxid_3bdz04ihlpwv22
+  # 昵称
+  nickname: 包猪公
+  autoword: '你好。包猪公睡觉了。如果需要租号请加包猪公小号租号。包猪公早上机器人租号，下午自己租。更新过后都是机器人'
