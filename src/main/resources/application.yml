@@ -5,7 +5,7 @@ spring:
   application:
     name: @name@
   datasource:
-    url: jdbc:mysql://192.168.1.2:3306/wechat_robot_1?useSSL=false&useUnicode=true&characterEncoding=utf-8&autoReconnect=true
+    url: jdbc:mysql://localhost:3306/wechat_robot?useSSL=false&useUnicode=true&characterEncoding=utf-8&autoReconnect=true
     username: root
     password: 459999
     driver-class-name: com.mysql.jdbc.Driver
@@ -54,12 +54,11 @@ config:
 schedule:
   cron: '*/5 * * * * *'
 card:
-  mode: true
-  content: "<?xml version=\"1.0\"?><msg bigheadimgurl=\"%s\" smallheadimgurl=\"%s\" username=\"%s\" nickname=\"%s\" fullpy=\"aoliao\" shortpy=\"\" alias=\"19991203\" imagestatus=\"2\" scene=\"17\" province=\"中国\" city=\"中国\" sign=\"\" sex=\"1\" certflag=\"0\" certinfo=\"\" brandIconUrl=\"\" brandHomeUrl=\"\" brandSubscriptConfigUrl= \"\" brandFlags=\"0\" regionCode=\"德玛西亚工作室\" />"
-  bigheadimgurl: http://wx.qlogo.cn/mmhead/ver_1/s9D9J7qqBARTTXsRwGPnnQpfSFmdibOkK832BYG7y3nOuW1XmvsCdibtVqTdfbUJP6Pn2kyQtOLWxCt3fVClqxFXkniam7GgOALrlW4icMSliaMo/0
-  smallheadimgurl: http://wx.qlogo.cn/mmhead/ver_1/s9D9J7qqBARTTXsRwGPnnQpfSFmdibOkK832BYG7y3nOuW1XmvsCdibtVqTdfbUJP6Pn2kyQtOLWxCt3fVClqxFXkniam7GgOALrlW4icMSliaMo/0
+  mode: false
+  content: "<?xml version=\"1.0\"?><msg bigheadimgurl=\"%s\" smallheadimgurl=\"%s\" username=\"%s\" nickname=\"%s\" fullpy=\"aoliao\" shortpy=\"\" alias=\"19991203\" imagestatus=\"2\" scene=\"17\" province=\"中国\" city=\"中国\" sign=\"\" sex=\"1\" certflag=\"0\" certinfo=\"\" brandIconUrl=\"\" brandHomeUrl=\"\" brandSubscriptConfigUrl= \"\" brandFlags=\"0\" regionCode=\"CN_CN_CN\" />"
+  bigheadimgurl: http://wx.qlogo.cn/mmhead/bNqVZcia7iaBwaJ4gVQv5ZVEO0hYvtXoTH0d2c529lUTg7kze1przwxg/0
+  smallheadimgurl: http://wx.qlogo.cn/mmhead/bNqVZcia7iaBwaJ4gVQv5ZVEO0hYvtXoTH0d2c529lUTg7kze1przwxg/0
   # wxid
-  username: wxid_3bdz04ihlpwv22
+  username: wxid_w5qpig7dah8121
   # 昵称
-  nickname: 包猪公
-  autoword: '你好。包猪公睡觉了。如果需要租号请加包猪公小号租号。包猪公早上机器人租号，下午自己租。更新过后都是机器人'
+  nickname: 天神下凡一锤五

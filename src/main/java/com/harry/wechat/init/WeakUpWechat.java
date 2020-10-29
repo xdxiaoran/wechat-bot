@@ -16,8 +16,6 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-
 /**
  * @author Harry
  * @date 2020/10/23
@@ -56,9 +54,9 @@ public class WeakUpWechat implements ApplicationRunner {
                         if (friendRes != null && CollectionUtils.isNotEmpty(friendRes.getFdlist())) {
                             userInfoService.syncUserInfo(friendRes.getFdlist());
                         }
-                        SocketProperties.sleep(60000);
+                        SocketProperties.sleep(6_000_000);
                     } else {
-                        SocketProperties.sleep(500);
+                        SocketProperties.sleep(60_000);
                     }
                 }catch (Exception e){
                     log.info("联系人同步失败");

@@ -72,14 +72,15 @@ public class WeChaterviceImpl implements WeChatervice {
                     return;
                 }
 
-                if (isCardMode) {
-                    if (USER_STATUS_WORD.containsKey(baseRes.getWxid())){
-                        return;
-                    }else {
 
-                        if (silentMode){
-                            return;
-                        }
+                if (silentMode) {
+                    return;
+                }
+
+                if (isCardMode) {
+                    if (USER_STATUS_WORD.containsKey(baseRes.getWxid())) {
+                        return;
+                    } else {
 
                         Instruction instruction = Instruction.builder()
                                 .funid(FunType.CARD.getFunid())
@@ -90,7 +91,7 @@ public class WeChaterviceImpl implements WeChatervice {
 
                         InstructionUtil.sendText(baseRes.getWxid(), cardConfig.getAutoword());
                         InstructionUtil.postForObject(instruction, Object.class);
-                        USER_STATUS_WORD.put(baseRes.getWxid(),"send");
+                        USER_STATUS_WORD.put(baseRes.getWxid(), "send");
                         return;
                     }
                 }
@@ -138,7 +139,7 @@ public class WeChaterviceImpl implements WeChatervice {
 
                         boolean restult = userInfoService.recharge(dto);
 
-                        if (isCardMode){
+                        if (isCardMode || silentMode) {
                             return;
                         }
                         if (restult) {
@@ -306,6 +307,8 @@ public class WeChaterviceImpl implements WeChatervice {
             }
 
 
+        } else if (msg.contains("比尔特沃夫") || msg.contains("皮儿吉沃特")) {
+            return "需要电5皮尔特沃夫还是  网1比尔吉沃特";
         }
 
         return "0";
