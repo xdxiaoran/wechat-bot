@@ -56,13 +56,14 @@ public class WeChaterviceImpl implements WeChatervice {
     @Override
     public void receiveMsg(BaseRes baseRes) {
 
-        // 屏蔽群消息
-        if (baseRes.getWxid().endsWith("@chatroom")) {
+        UserInfo userInfo = userInfoService.getUserByWxid(baseRes.getWxid());
+
+        // 屏蔽一般群消息
+        if (baseRes.getWxid().endsWith("@chatroom") && !userInfo.getIsRentGroup()) {
             return;
         }
         // 偷登号检测
         // 关键词检测
-        UserInfo userInfo = userInfoService.getUserByWxid(baseRes.getWxid());
 
         switch (baseRes.msgType()) {
             case TEXT:
@@ -103,11 +104,14 @@ public class WeChaterviceImpl implements WeChatervice {
                 } else if (!Objects.equals("0", result)) {
                     // send
                     InstructionUtil.sendText(baseRes.getWxid(), result);
+                    if (result.contains("下单成功")) {
+                        InstructionUtil.sendText(baseRes.getWxid(), "请不要提前转账，打完之后转账会自动下号");
+                    }
                     return;
                 }
 
                 // words
-                String res = WordUtil.collect(baseRes.getWxid(), baseRes.getContent(), accountService);
+                String res = WordUtil.collect(baseRes.getWxid(), baseRes.getContent(), accountService, userInfo.getType() == 2);
 
                 if (StringUtils.isNotBlank(res)) {
                     InstructionUtil.sendText(baseRes.getWxid(), res);

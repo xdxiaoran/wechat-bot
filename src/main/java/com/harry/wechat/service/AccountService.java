@@ -14,4 +14,7 @@ public interface AccountService {
     BaseResponse getAccounts(GetAccountDto param);
 
     BaseResponse save(Account dto);
+
+    BaseResponse getAccountsRent();
+
 }

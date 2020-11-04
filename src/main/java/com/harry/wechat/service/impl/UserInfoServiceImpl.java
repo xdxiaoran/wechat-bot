@@ -190,4 +190,19 @@ public class UserInfoServiceImpl implements UserInfoService {
 
         return BaseResponse.OK(pageDto);
     }
+
+    @Override
+    @Transactional
+    public BaseResponse markAsRentGroup(Long userId, Integer status) {
+
+        Optional<UserInfo> userInfoOptional = userInfoDao.findById(userId);
+        if (userInfoOptional.isPresent()) {
+            UserInfo userInfo = userInfoOptional.get();
+            userInfo.setIsRentGroup(status == 1);
+            userInfoDao.save(userInfo);
+            return BaseResponse.OK;
+        } else {
+            return BaseResponse.fail("查无此人");
+        }
+    }
 }

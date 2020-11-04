@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import java.math.BigDecimal;
 
@@ -62,6 +63,13 @@ public class UserInfo extends BaseEntity {
     private Integer remindTime;
 
 
+    /**
+     * 租号群标记
+     */
+    @Column(name = "is_rent_group",columnDefinition = "tinyint(1) DEFAULT '0'")
+    private Boolean isRentGroup;
+
+
     public static UserInfo of(FriendDto dto){
         return UserInfo.builder()
                 .nickName(dto.getName())
@@ -73,6 +81,7 @@ public class UserInfo extends BaseEntity {
                 .type(0)
                 .rentMode(1)
                 .remindTime(360)
+                .isRentGroup(false)
                 .build();
     }
 }

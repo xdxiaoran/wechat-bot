@@ -1,12 +1,17 @@
 package com.harry.wechat.service.impl;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.harry.wechat.dao.AccountDao;
+import com.harry.wechat.dao.OrdersDao;
 import com.harry.wechat.dao.SQLSupporter;
 import com.harry.wechat.dao.UserInfoDao;
 import com.harry.wechat.dto.BaseResponse;
+import com.harry.wechat.dto.vo.AccountDto;
 import com.harry.wechat.dto.vo.GetAccountDto;
 import com.harry.wechat.entity.Account;
+import com.harry.wechat.entity.Orders;
 import com.harry.wechat.entity.UserInfo;
 import com.harry.wechat.service.AccountService;
 import lombok.extern.slf4j.Slf4j;
@@ -17,10 +22,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static com.harry.wechat.util.DateUtils.getTimeDifference;
 
 /**
  * @author Harry
@@ -38,6 +43,8 @@ public class AccountServiceImpl implements AccountService {
     private UserInfoDao userInfoDao;
     @Autowired
     private AccountDao accountDao;
+    @Autowired
+    private OrdersDao ordersDao;
 
     @Override
     public BaseResponse getAccounts(GetAccountDto param) {
@@ -126,5 +133,39 @@ public class AccountServiceImpl implements AccountService {
         accountDao.save(accountOld);
 
         return BaseResponse.OK;
+    }
+
+    @Override
+    public BaseResponse getAccountsRent() {
+
+        List<Account> accounts = accountDao.findByStatus(1);
+
+        List<Orders> ordersList = ordersDao.findByAccountIdInAndStatus(accounts.stream().map(Account::getId).collect(Collectors.toList()), "1");
+
+        List<UserInfo> userInfos = userInfoDao.findByIdIn(ordersList.stream().map(Orders::getUserId).collect(Collectors.toList()));
+
+        Map<Long, UserInfo> userInfoMap = Maps.uniqueIndex(userInfos, UserInfo::getId);
+
+        Map<Long, Orders> ordersMap = Maps.uniqueIndex(ordersList, Orders::getAccountId);
+
+        List<AccountDto> accountDtos = Lists.newArrayList();
+
+        Date date = new Date();
+        accounts.forEach(account -> {
+            AccountDto accountDto = new AccountDto();
+            BeanUtils.copyProperties(account, accountDto);
+            Orders order = ordersMap.get(account.getId());
+            if (order != null) {
+                int cost = getTimeDifference(date, order.getStartTime());
+                accountDto.setCostTime(cost);
+                UserInfo userInfo = userInfoMap.get(order.getUserId());
+                if (userInfo != null) {
+                    accountDto.setWxName(userInfo.getNickName());
+                }
+            }
+            accountDtos.add(accountDto);
+        });
+
+        return BaseResponse.OK(accountDtos);
     }
 }

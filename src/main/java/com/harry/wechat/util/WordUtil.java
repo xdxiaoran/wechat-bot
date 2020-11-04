@@ -42,7 +42,7 @@ public class WordUtil {
 
     private static List<String> KEYS = Lists.newArrayList("f", "d", "m", "y");
 
-    public static String collect(String wxid, String message, AccountService accountService) {
+    public static String collect(String wxid, String message, AccountService accountService, boolean isSvip) {
         List<Word> words = analyse(message);
         Map<String, List<String>> results = Maps.newHashMap();
         words.stream().filter(w -> KEYS.indexOf(w.getPartOfSpeech().getPos()) != -1).forEach(word -> {
@@ -63,7 +63,7 @@ public class WordUtil {
             }
 
             String msg = MapUtils.mapToValueString(results);
-            String account = getAccounts(words, wxid, accountService);
+            String account = getAccounts(words, wxid, accountService, isSvip);
             return "======" + msg + "========\n" + account + "\n 回复编号直接下单";
         }
         return null;
@@ -76,7 +76,7 @@ public class WordUtil {
 
 
     @SuppressWarnings("unchecked")
-    public static String getAccounts(List<Word> words, String wxid, AccountService accountService) {
+    public static String getAccounts(List<Word> words, String wxid, AccountService accountService, boolean isSvip) {
         List<String> servers = Lists.newArrayList();
         List<String> modes = Lists.newArrayList();
 
@@ -175,7 +175,7 @@ public class WordUtil {
 
                 List<Account> accounts1 = (List<Account>) response1.getData();
                 // List<Word> words1 = USER_STATUS.get(wxid);
-                if (CollectionUtils.isEmpty(accounts1)){
+                if (CollectionUtils.isEmpty(accounts1)) {
                     USER_STATUS.put(wxid, Collections.EMPTY_LIST);
                     return "未找到符合条件的账号";
                 }
@@ -191,6 +191,10 @@ public class WordUtil {
             msg.append("单双" + account.getRankLevelSingle());
             if (StringUtils.isNotBlank(account.getRankLevelFlexible())) {
                 msg.append("-灵活" + account.getRankLevelFlexible());
+            }
+            if (isSvip) {
+                msg.append("-等级 " + account.getLevel());
+                msg.append(" -英雄数量 " + account.getHeroNum());
             }
             msg.append("- " + account.getPrice() + " rh\n");
         });

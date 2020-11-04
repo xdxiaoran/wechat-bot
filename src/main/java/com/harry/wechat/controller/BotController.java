@@ -67,6 +67,11 @@ public class BotController {
         return ordersService.rent(dto);
     }
 
+    @PostMapping("/accounts/rent")
+    public BaseResponse getAccountRent() {
+
+        return accountService.getAccountsRent();
+    }
 
     @GetMapping(value = "orders")
     public BaseResponse getOrders(@RequestParam(defaultValue = "0") int page,
@@ -115,9 +120,15 @@ public class BotController {
 
     @GetMapping("/recharge/list")
     public BaseResponse rechargeList(@RequestParam(defaultValue = "0") int page,
-                                     @RequestParam(defaultValue = "20") int size){
+                                     @RequestParam(defaultValue = "20") int size) {
         PageRequest pageRequest = PageRequest.of(page, size, Sort.Direction.DESC, "id");
         return userInfoService.rechargeList(pageRequest);
+    }
+
+    @GetMapping("/rentgroup/mark")
+    @ApiOperation(value = "租号群标记", notes = "标记为可租号群, 1标记为可租号群，0 标记为不可租号群")
+    public BaseResponse markAsRentGroup(@RequestParam(value = "userId") Long userId, @RequestParam(value = "status") Integer status) {
+        return userInfoService.markAsRentGroup(userId, status);
     }
 
 }

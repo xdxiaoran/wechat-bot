@@ -2,11 +2,14 @@ package com.harry.wechat.init;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apdplat.word.dictionary.DictionaryFactory;
+import org.apdplat.word.util.WordConfTools;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
+
+import java.io.File;
 
 import static com.harry.wechat.util.WordUtil.analyse;
 
@@ -25,6 +28,21 @@ public class LoadDict implements ApplicationRunner {
     public void run(ApplicationArguments args) throws Exception {
         // TODO: 2020/10/23 加载字典
         log.info("加载字典");
+
+        String selfDic = "D:\\part_of_speech_dic.txt";
+        String selfSynonym = "D:\\word_synonym.txt";
+
+        File fileDic = new File(selfDic);
+        if (fileDic.exists()) {
+            WordConfTools.set("part.of.speech.dic.path", "classpath:part_of_speech_dic.txt," + selfDic);
+        }
+        File fileSyn = new File(selfSynonym);
+        if (fileSyn.exists()) {
+            WordConfTools.get("word.synonym.path", "classpath:word_synonym.txt," + selfSynonym);
+
+        }
+
+
         DictionaryFactory.reload();
         analyse("init");
         log.info("加载完成");

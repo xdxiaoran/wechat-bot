@@ -29,4 +29,6 @@ public interface UserInfoService {
     BaseResponse save(UserInfo dto);
 
     BaseResponse rechargeList(PageRequest pageRequest);
+
+    BaseResponse markAsRentGroup(Long userId,Integer status);
 }

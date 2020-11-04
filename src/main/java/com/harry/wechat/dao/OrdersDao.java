@@ -22,4 +22,6 @@ public interface OrdersDao extends JpaRepository<Orders, Long>, JpaSpecification
     List<Orders> findByStatusAndRemindStatus(String status, Boolean remindStatus);
 
     List<Orders> findByAccountIdInAndStatusNot(List<Long> accountIds, String status);
+
+    List<Orders> findByAccountIdInAndStatus(List<Long> accountIds,String status);
 }
