@@ -1,6 +1,7 @@
 package com.harry.wechat.service;
 
 import com.harry.wechat.dto.BaseResponse;
+import com.harry.wechat.dto.RentModeDto;
 import com.harry.wechat.dto.server.FriendDto;
 import com.harry.wechat.dto.vo.GetUserDto;
 import com.harry.wechat.dto.vo.RechargeDto;
@@ -31,4 +32,6 @@ public interface UserInfoService {
     BaseResponse rechargeList(PageRequest pageRequest);
 
     BaseResponse markAsRentGroup(Long userId,Integer status);
+
+    BaseResponse rentMode(RentModeDto dto);
 }

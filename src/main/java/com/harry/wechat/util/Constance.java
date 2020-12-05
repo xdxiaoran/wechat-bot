@@ -1,10 +1,11 @@
 package com.harry.wechat.util;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import org.apdplat.word.segmentation.Word;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Harry
@@ -44,11 +45,12 @@ public class Constance {
      *
      * @param message
      */
-    public static List<String> END_KEYWORD = Lists.newArrayList("结账", "红包", "下了", "打完", "下线", "下号", "打完了", "结束", "结束了", "结束啦", "用完了", "老板不打了", "号下了", "多少钱", "好了", "完", "结账", "我下了", "退", "回收", "还号", "jieshu", "JIESHU", "DAWAN", "dawan", "dwan");
+    public static Set<String> END_KEYWORD = Sets.newHashSet("结账", "红包", "下了", "打完", "下线", "下号", "打完了", "结束", "结束了", "结束啦", "用完了", "老板不打了", "号下了", "多少钱", "好了", "完", "结账", "我下了", "退", "回收", "还号", "jieshu", "JIESHU", "DAWAN", "dawan", "dwan");
     // private static Stream<String> END_KEYWORD = Lists.newArrayList("结账", "红包", "下了", "打完", "下线", "下号", "打完了", "结束", "结束了", "结束啦", "用完了", "老板不打了", "号下了", "多少钱", "好了", "完", "结账", "我下了", "退", "回收", "还号", "jieshu", "JIESHU", "DAWAN", "dawan", "dwan").stream();
 
-    public static List<String> QUERY_KEYWORD = Lists.newArrayList("还能用", "可以用", "可以使用");
+    public static Set<String> QUERY_KEYWORD =  Sets.newHashSet("还能用", "可以用", "可以使用","是否可用");
 
+    public static Set<String> END_ALL_KEYWORD =   Sets.newHashSet("全部下号");
 
     /**
      * 可过期的缓存
@@ -71,7 +73,8 @@ public class Constance {
     };
 
 
-    public static List<String> BLACK_NAME = Lists.newArrayList("偷登号", "不租", "不能租", "太强", "外挂", "黑机器", "黑ip", "有问题", "嫌疑犯");
+    public static Set<String> BLACK_NAME =  Sets.newHashSet("偷登号", "不租", "不能租", "太强", "外挂", "黑机器", "黑ip", "有问题", "嫌疑犯");
 
     public static Boolean silentMode = true;
+    public static Boolean isCardMode = false;
 }

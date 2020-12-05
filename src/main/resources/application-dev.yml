@@ -50,7 +50,7 @@ swagger:
 
 config:
   wechat:
-    url: '10.211.55.4:2222'
+    url: '10.211.55.3:2222'
 schedule:
   cron: '*/5 * * * * *'
 card:

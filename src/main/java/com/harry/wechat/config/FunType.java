@@ -70,6 +70,11 @@ public enum FunType {
      * {"funid":50,"WeChatID":1,"wxid":"wxid_cxkcxkcxkcxkSB","transferid":""}
      */
     TRANSFER(50),
+    /**
+     * 同意好友请求
+     * {"funid":51,"WeChatID":1,"v1":"xxx","v4":"xxxx"}
+     */
+    AGREEFRIEND(51),
 
     /**
      * 获取当前启动微信数目和登录信息

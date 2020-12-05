@@ -1,11 +1,11 @@
 package com.harry.wechat.service.impl;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.harry.wechat.config.FunType;
 import com.harry.wechat.dao.AccountDao;
 import com.harry.wechat.dao.OrdersDao;
+import com.harry.wechat.dao.SQLSupporter;
 import com.harry.wechat.dao.UserInfoDao;
 import com.harry.wechat.dto.BaseResponse;
 import com.harry.wechat.dto.server.Instruction;
@@ -25,6 +25,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
 import java.math.BigDecimal;
 import java.util.*;
 
@@ -46,6 +50,8 @@ public class OrdersServiceImpl implements OrdersService {
     private AccountDao accountDao;
     @Autowired
     private UserInfoDao userInfoDao;
+    @Autowired
+    private SQLSupporter supporter;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -100,6 +106,41 @@ public class OrdersServiceImpl implements OrdersService {
                     .build();
             ordersDao.save(orders);
             accountDao.save(account);
+
+            // 发送账号信息
+            InstructionUtil.sendText(dto.getWxid(), account.getUsername() + "---" + account.getPassword());
+            // 发送英雄卡信息
+            StringBuilder msg = new StringBuilder();
+            msg.append(account.getId() + "号 段位: " +
+                    (StringUtils.isNotBlank(account.getRankLevelSingle()) ? account.getRankLevelSingle() : "无"));
+            if (account.getVipLevel() == 2) {
+                msg.append(" SVIP");
+            } else if (account.getVipLevel() == 1) {
+                msg.append(" VIP");
+            }
+            msg.append("\n英雄列表:\n");
+            // msg.append(account.getHeroList() + "\n");
+            // InstructionUtil.sendText(dto.getWxid(), msg.toString());
+
+            // TODO: 2020/12/2 发送文件
+            File file = new File("tmp/英雄卡" + System.currentTimeMillis() + ".txt");
+
+            try {
+                if (!file.isFile()) {
+                    file.createNewFile();
+                }
+                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "utf-8"));
+                bw.write(msg.toString());
+                String heroList = account.getHeroList();
+                bw.write(heroList);
+                bw.close();
+
+            } catch (Exception e) {
+
+            }
+
+            Instruction instruction = Instruction.of(dto.getWxid(), file.getAbsolutePath(), FunType.SENDFILE.getFunid());
+            InstructionUtil.postForObject(instruction, Object.class);
 
             return BaseResponse.OK(account.getUsername() + "---" + account.getPassword());
 
@@ -334,7 +375,7 @@ public class OrdersServiceImpl implements OrdersService {
             Account account = accountDao.getOne(dto.getAccountIds().get(0));
             List<Orders> orders = ordersDao.findByAccountIdAndStatusNot(account.getId(), "0");
             if (CollectionUtils.isEmpty(orders)) {
-                if (account.getStatus() != 0){
+                if (account.getStatus() != 0) {
                     account.setStatus(0);
                 }
             } else {
@@ -366,18 +407,18 @@ public class OrdersServiceImpl implements OrdersService {
                 builder.append("本次消费金额: " + amount + " 元\n");
                 builder.append("账户余额: " + userInfo.getBalance());
 
-                InstructionUtil.sendText(userInfo.getWxid(),builder.toString());
+                InstructionUtil.sendText(userInfo.getWxid(), builder.toString());
 
                 userInfoDao.save(userInfo);
                 ordersDao.save(order);
 
             }
             accountDao.save(account);
-        }else {
+        } else {
             // 批量下号，全部下号
-            List<Orders> orders = ordersDao.findByAccountIdInAndStatusNot(dto.getAccountIds(),"0");
-            List<Account> accounts =  accountDao.findByIdIn(dto.getAccountIds());
-            if (CollectionUtils.isNotEmpty(orders)){
+            List<Orders> orders = ordersDao.findByAccountIdInAndStatusNot(dto.getAccountIds(), "0");
+            List<Account> accounts = accountDao.findByIdIn(dto.getAccountIds());
+            if (CollectionUtils.isNotEmpty(orders)) {
                 List<UserInfo> users = userInfoDao.findAll();
                 Map<Long, UserInfo> userMap = Maps.uniqueIndex(users, UserInfo::getId);
                 Map<Long, Account> accountMap = Maps.uniqueIndex(accounts, Account::getId);
@@ -386,7 +427,7 @@ public class OrdersServiceImpl implements OrdersService {
                 List<UserInfo> userUpdate = new ArrayList<>();
                 List<Orders> orderUpdate = new ArrayList<>();
                 List<Instruction> instructions = Lists.newArrayList();
-                orders.forEach( order -> {
+                orders.forEach(order -> {
                     Account account = accountMap.get(order.getAccountId());
                     UserInfo userInfo = userMap.get(order.getUserId());
                     account.setStatus(0);
@@ -423,13 +464,19 @@ public class OrdersServiceImpl implements OrdersService {
 
                 new Thread(() -> {
                     Iterator<Instruction> iterator = instructions.iterator();
-                    while (iterator.hasNext()){
-                        InstructionUtil.postForObject(iterator.next(),Object.class);
+                    while (iterator.hasNext()) {
+                        InstructionUtil.postForObject(iterator.next(), Object.class);
                         SocketProperties.sleep(1000);
                     }
                 }).start();
             }
         }
         return BaseResponse.OK;
+    }
+
+    @Override
+    public BaseResponse totalAmount() {
+
+        return BaseResponse.OK(ordersDao.getTotalAmount());
     }
 }

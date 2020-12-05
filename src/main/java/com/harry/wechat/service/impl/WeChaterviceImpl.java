@@ -2,13 +2,18 @@ package com.harry.wechat.service.impl;
 
 import com.harry.wechat.config.CardConfig;
 import com.harry.wechat.config.FunType;
+import com.harry.wechat.dao.AccountDao;
+import com.harry.wechat.dao.ConfigDao;
 import com.harry.wechat.dto.BaseResponse;
 import com.harry.wechat.dto.server.BaseRes;
+import com.harry.wechat.dto.server.FriendRes;
 import com.harry.wechat.dto.server.Instruction;
+import com.harry.wechat.dto.server.LoginUser;
 import com.harry.wechat.dto.vo.GetAccountDto;
 import com.harry.wechat.dto.vo.RechargeDto;
 import com.harry.wechat.dto.vo.RentDto;
 import com.harry.wechat.entity.Account;
+import com.harry.wechat.entity.Config;
 import com.harry.wechat.entity.UserInfo;
 import com.harry.wechat.service.AccountService;
 import com.harry.wechat.service.OrdersService;
@@ -16,15 +21,18 @@ import com.harry.wechat.service.UserInfoService;
 import com.harry.wechat.service.WeChatervice;
 import com.harry.wechat.util.InstructionUtil;
 import com.harry.wechat.util.WordUtil;
+import com.harry.wechat.util.XmlUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static com.harry.wechat.util.Constance.*;
 import static com.harry.wechat.util.WordUtil.transferAmount;
@@ -47,8 +55,10 @@ public class WeChaterviceImpl implements WeChatervice {
     @Autowired
     private UserInfoService userInfoService;
 
-    @Value("${card.mode:false}")
-    private Boolean isCardMode;
+    @Autowired
+    private ConfigDao configDao;
+    @Autowired
+    private AccountDao accountDao;
 
     @Autowired
     private CardConfig cardConfig;
@@ -69,10 +79,11 @@ public class WeChaterviceImpl implements WeChatervice {
             case TEXT:
                 // log.info(baseRes.getContent());
 
+                initConfig();
+
                 if (BLACK_NAME.stream().anyMatch(userInfo.getRemarkName()::contains)) {
                     return;
                 }
-
 
                 if (silentMode) {
                     return;
@@ -103,9 +114,12 @@ public class WeChaterviceImpl implements WeChatervice {
                     return;
                 } else if (!Objects.equals("0", result)) {
                     // send
-                    InstructionUtil.sendText(baseRes.getWxid(), result);
+                    // InstructionUtil.sendText(baseRes.getWxid(), result.replace("下单成功", ""));
+
                     if (result.contains("下单成功")) {
                         InstructionUtil.sendText(baseRes.getWxid(), "请不要提前转账，打完之后转账会自动下号");
+                    }else {
+                        InstructionUtil.sendText(baseRes.getWxid(),result);
                     }
                     return;
                 }
@@ -160,6 +174,8 @@ public class WeChaterviceImpl implements WeChatervice {
 
                             } else {
                                 // TODO: 2020/10/14 先付款，后下单
+
+                                InstructionUtil.sendText(baseRes.getWxid(), "充值成功");
                             }
                         }
                     }
@@ -178,12 +194,54 @@ public class WeChaterviceImpl implements WeChatervice {
                     log.info("收款结果: " + resp);
                 }
 
+            case ADD_FRIEND:
 
+                String attributes = XmlUtils.getAttributes(baseRes.getContent(), "encryptusername", "ticket");
+                Instruction instruction = Instruction.of(FunType.AGREEFRIEND.getFunid());
+                String[] split = attributes.split("--");
+                instruction.setV1(split[0]);
+                instruction.setV4(split[1]);
+
+                InstructionUtil.postForObject(instruction,Object.class);
+
+                // 更新好友列表
+                syncFriend();
                 break;
             default:
                 log.info("其它消息");
 
         }
+    }
+
+    protected void syncFriend(){
+        LoginUser loginUser = InstructionUtil.currentUser();
+        if (loginUser != null && StringUtils.isNotBlank(loginUser.getWxid())) {
+            // flag = !flag;
+            FriendRes friendRes = InstructionUtil.postForObject(Instruction.builder().funid(FunType.FRIENDLIST.getFunid()).build(), FriendRes.class);
+            if (friendRes != null && CollectionUtils.isNotEmpty(friendRes.getFdlist())) {
+                userInfoService.syncUserInfo(friendRes.getFdlist());
+            }
+        }
+    }
+
+    private void initConfig() {
+        List<Config> dicts = configDao.findAll();
+
+        Map<String, List<Config>> dictMap = dicts.stream().collect(Collectors.groupingBy(Config::getKey));
+
+        if (CollectionUtils.isNotEmpty(dictMap.get("1"))) {
+            END_KEYWORD.addAll(dictMap.get("1").stream().map(Config::getValue).collect(Collectors.toSet()));
+        }
+        if (CollectionUtils.isNotEmpty(dictMap.get("2"))) {
+            END_ALL_KEYWORD.addAll(dictMap.get("2").stream().map(Config::getValue).collect(Collectors.toSet()));
+        }
+        if (CollectionUtils.isNotEmpty(dictMap.get("3"))) {
+            QUERY_KEYWORD.addAll(dictMap.get("3").stream().map(Config::getValue).collect(Collectors.toSet()));
+        }
+        if (CollectionUtils.isNotEmpty(dictMap.get("4"))) {
+            BLACK_NAME.addAll(dictMap.get("4").stream().map(Config::getValue).collect(Collectors.toSet()));
+        }
+
     }
 
 
@@ -219,11 +277,12 @@ public class WeChaterviceImpl implements WeChatervice {
             BaseResponse response = ordersService.rent(dto);
 
             if (Objects.equals(response.getCode(), 200)) {
-                return "下单成功\n" + response.getData();
+                return "下单成功";
             } else {
                 return "下单失败\n" + response.getMessage();
             }
-        } else if (Objects.equals("全部下号", msg)) {
+            // } else if (Objects.equals("全部下号", msg)) {
+        } else if (END_ALL_KEYWORD.stream().anyMatch(msg::contains)) {
             RentDto dto = RentDto.builder()
                     .wxid(wxid)
                     .type(3)
@@ -273,10 +332,25 @@ public class WeChaterviceImpl implements WeChatervice {
         } else if (QUERY_KEYWORD.stream().anyMatch(msg::contains)) {
             String accountName = null;
             if (msg.contains("----")) {
-                accountName = msg.substring(0, msg.indexOf("----"));
+                int index = 0;
+                for (int i = 0; i < msg.length(); i++) {
+                    if (Character.isDigit(msg.charAt(i))) {
+                        index = i;
+                        break;
+                    }
+                }
+                accountName = msg.substring(index, msg.indexOf("----"));
             } else if (msg.contains("---")) {
-                accountName = msg.substring(0, msg.indexOf("---"));
+                int index = 0;
+                for (int i = 0; i < msg.length(); i++) {
+                    if (Character.isDigit(msg.charAt(i))) {
+                        index = i;
+                        break;
+                    }
+                }
+                accountName = msg.substring(index, msg.indexOf("---"));
             } else if (msg.matches("[0-9]+.*")) {
+                // TODO: 2020/11/12  这里的逻辑貌似有点问题，一直走不到这里来
                 int index = 0;
                 for (int i = 0; i < msg.length(); i++) {
                     if (!Character.isDigit(msg.charAt(i))) {
@@ -287,7 +361,7 @@ public class WeChaterviceImpl implements WeChatervice {
                 accountName = msg.substring(0, index);
             }
 
-            if (StringUtils.isNotEmpty(accountName)) {
+            if (StringUtils.isEmpty(accountName)) {
                 return "查询格式有误\n 请输入: 用户名---密码 是否可用 查询账号信息";
             }
 
@@ -298,7 +372,7 @@ public class WeChaterviceImpl implements WeChatervice {
             BaseResponse response = accountService.getAccounts(dto);
 
             if (response.getData() == null) {
-                return "查询格式有误\n 请输入: 用户名---密码 是否可用 查询账号信息";
+                return "没有查到 " + accountName + " 该账号信息";
             }
 
             Account account = (Account) response.getData();
@@ -326,6 +400,15 @@ public class WeChaterviceImpl implements WeChatervice {
         } else {
             return response.getMessage();
         }
+    }
+
+    public static void main(String[] args) {
+        String content = "<msg fromusername=\"wxid_50v93ju2u3b622\" encryptusername=\"v3_020b3826fd03010000000000d39631e2e17f49000000501ea9a3dba12f95f6b60a0536a1adb634399dbce837863888927c47a4d0da136d483e512e590e4c10b17664ce7d578aacd861621630669c0df36bb382b58b70bc1f16ed56ec839d8fbf03a01a@stranger\" fromnickname=\"亦髯\" content=\"我是群聊“机器人测试”的亦髯\" fullpy=\"yiran\" shortpy=\"YR\" imagestatus=\"3\" scene=\"14\" country=\"\" province=\"\" city=\"\" sign=\"\" percard=\"1\" sex=\"0\" alias=\"xly19940409\" weibo=\"\" albumflag=\"0\" albumstyle=\"0\" albumbgimgid=\"\" snsflag=\"256\" snsbgimgid=\"\" snsbgobjectid=\"0\" mhash=\"f103580baae60c2a8fc26c27bf129e19\" mfullhash=\"f103580baae60c2a8fc26c27bf129e19\" bigheadimgurl=\"http://wx.qlogo.cn/mmhead/ver_1/Z3re4NYghDwl23sJvRYwpyS7IPtp0khOJempZxm88r1ELdNEvmt4WANukGfiaxSgMbU7lFk4LbIF32fC6PticN2Tv6AuZutjFhx8wYSaiaW088/0\" smallheadimgurl=\"http://wx.qlogo.cn/mmhead/ver_1/Z3re4NYghDwl23sJvRYwpyS7IPtp0khOJempZxm88r1ELdNEvmt4WANukGfiaxSgMbU7lFk4LbIF32fC6PticN2Tv6AuZutjFhx8wYSaiaW088/96\" ticket=\"v4_000b708f0b040000010000000000d8be73144d2a0314b55965a2cb5f1000000050ded0b020927e3c97896a09d47e6e9e96d75d4004990754c48e4ca4448f1fc94a017d4f9abc76530209fbafb4c492c129a056f49def39572845f33b09a504653321f7cc7afe04792eae1a2df084d562fbc18370c402509bc200a758c0f237c8dd4340892b16146cadb4937e897abcdcea6293517cac45f8df@stranger\" opcode=\"2\" googlecontact=\"\" qrticket=\"\" chatroomusername=\"19621412245@chatroom\" sourceusername=\"\" sourcenickname=\"\" sharecardusername=\"\" sharecardnickname=\"\" cardversion=\"\"><brandlist count=\"0\" ver=\"684001083\"></brandlist></msg>";
+
+        // String encryptusername = XmlUtils.getNodeValue("encryptusername", content);
+
+        String attributes = XmlUtils.getAttributes(content, "encryptusername", "ticket");
+        System.out.println(attributes);
     }
 
 }

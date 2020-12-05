@@ -63,7 +63,7 @@ public class WordUtil {
             }
 
             String msg = MapUtils.mapToValueString(results);
-            String account = getAccounts(words, wxid, accountService, isSvip);
+            String account = getAccounts(words, wxid, accountService, isSvip, message.endsWith("英雄卡"));
             return "======" + msg + "========\n" + account + "\n 回复编号直接下单";
         }
         return null;
@@ -76,7 +76,7 @@ public class WordUtil {
 
 
     @SuppressWarnings("unchecked")
-    public static String getAccounts(List<Word> words, String wxid, AccountService accountService, boolean isSvip) {
+    public static String getAccounts(List<Word> words, String wxid, AccountService accountService, boolean isSvip, boolean isHeroMode) {
         List<String> servers = Lists.newArrayList();
         List<String> modes = Lists.newArrayList();
 
@@ -185,19 +185,66 @@ public class WordUtil {
 
         StringBuilder msg = new StringBuilder();
 
-        accounts.forEach(account -> {
-            msg.append("【" + account.getId() + "】 ");
-            msg.append(account.getServer() + "-");
-            msg.append("单双" + account.getRankLevelSingle());
-            if (StringUtils.isNotBlank(account.getRankLevelFlexible())) {
-                msg.append("-灵活" + account.getRankLevelFlexible());
+        for (int i = 0; i < accounts.size() && i < 10; i++) {
+            Account account = accounts.get(i);
+            if (isHeroMode) {
+                // 英雄卡
+                msg.append(account.getId() + "号 段位: " +
+                        (StringUtils.isNotBlank(account.getRankLevelSingle()) ? account.getRankLevelSingle() : "无"));
+                if (account.getVipLevel() == 2) {
+                    msg.append(" SVIP");
+                } else if (account.getVipLevel() == 1) {
+                    msg.append(" VIP");
+                }
+                msg.append("\n英雄列表:\n");
+                msg.append(account.getHeroList() + "\n");
+            } else {
+                msg.append("【" + account.getId() + "】 ");
+                // msg.append(account.getServer() + "-");
+                msg.append("单双" + account.getRankLevelSingle());
+                if (StringUtils.isNotBlank(account.getRankLevelFlexible())) {
+                    msg.append("-灵活" + account.getRankLevelFlexible());
+                }
+                if (isSvip) {
+                    msg.append("-等级 " + account.getLevel());
+                    msg.append(" -英雄数量 " + account.getHeroNum());
+                }
+                if (account.getVipLevel() == 2) {
+                    msg.append(" SVIP");
+                } else if (account.getVipLevel() == 1) {
+                    msg.append(" VIP");
+                }
+                msg.append("\n");
+                // msg.append("- " + account.getPrice() + " rh\n");
             }
-            if (isSvip) {
-                msg.append("-等级 " + account.getLevel());
-                msg.append(" -英雄数量 " + account.getHeroNum());
+        }
+
+       /* accounts.forEach(account -> {
+            if (isHeroMode) {
+                // 英雄卡
+                msg.append(account.getId() + "号 段位: " +
+                        (StringUtils.isNotBlank(account.getRankLevelSingle()) ? account.getRankLevelSingle() : "无"));
+                if (account.getVipLevel() == 2) {
+                    msg.append(" SVIP");
+                } else if (account.getVipLevel() == 1) {
+                    msg.append(" VIP");
+                }
+                msg.append("\n英雄列表:\n");
+                msg.append(account.getHeroList() + "\n");
+            } else {
+                msg.append("【" + account.getId() + "】 ");
+                msg.append(account.getServer() + "-");
+                msg.append("单双" + account.getRankLevelSingle());
+                if (StringUtils.isNotBlank(account.getRankLevelFlexible())) {
+                    msg.append("-灵活" + account.getRankLevelFlexible());
+                }
+                if (isSvip) {
+                    msg.append("-等级 " + account.getLevel());
+                    msg.append(" -英雄数量 " + account.getHeroNum());
+                }
+                msg.append("- " + account.getPrice() + " rh\n");
             }
-            msg.append("- " + account.getPrice() + " rh\n");
-        });
+        });*/
 
         return msg.toString();
     }

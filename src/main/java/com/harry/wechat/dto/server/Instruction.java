@@ -25,6 +25,8 @@ public class Instruction {
     private String wxid;
     private String content;
     private String transferid;
+    private String v1;
+    private String v4;
 
     public static Instruction of(String wxid, String content) {
         return builder().wxid(wxid).content(content).build();

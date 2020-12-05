@@ -18,4 +18,7 @@ public interface OrdersService {
     BaseResponse getOrders(PageRequest pageRequest);
 
     BaseResponse cancelRent(RentCancelDto dto);
+
+    BaseResponse totalAmount();
+
 }

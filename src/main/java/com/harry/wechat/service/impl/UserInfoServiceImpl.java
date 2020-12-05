@@ -6,6 +6,7 @@ import com.google.common.collect.Maps;
 import com.harry.wechat.dao.RechargeDao;
 import com.harry.wechat.dao.UserInfoDao;
 import com.harry.wechat.dto.BaseResponse;
+import com.harry.wechat.dto.RentModeDto;
 import com.harry.wechat.dto.server.FriendDto;
 import com.harry.wechat.dto.vo.GetUserDto;
 import com.harry.wechat.dto.vo.PageDto;
@@ -199,6 +200,20 @@ public class UserInfoServiceImpl implements UserInfoService {
         if (userInfoOptional.isPresent()) {
             UserInfo userInfo = userInfoOptional.get();
             userInfo.setIsRentGroup(status == 1);
+            userInfoDao.save(userInfo);
+            return BaseResponse.OK;
+        } else {
+            return BaseResponse.fail("查无此人");
+        }
+    }
+
+    @Override
+    @Transactional
+    public BaseResponse rentMode(RentModeDto dto) {
+        Optional<UserInfo> userInfoOptional = userInfoDao.findById(dto.getId());
+        if (userInfoOptional.isPresent()) {
+            UserInfo userInfo = userInfoOptional.get();
+            userInfo.setRentMode(dto.getRentMode());
             userInfoDao.save(userInfo);
             return BaseResponse.OK;
         } else {

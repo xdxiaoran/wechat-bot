@@ -54,7 +54,7 @@ public class WeakUpWechat implements ApplicationRunner {
                         if (friendRes != null && CollectionUtils.isNotEmpty(friendRes.getFdlist())) {
                             userInfoService.syncUserInfo(friendRes.getFdlist());
                         }
-                        SocketProperties.sleep(6_000_000);
+                        SocketProperties.sleep(60_000);
                     } else {
                         SocketProperties.sleep(60_000);
                     }

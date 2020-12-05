@@ -1,6 +1,5 @@
 package com.harry.wechat.service.impl;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.harry.wechat.dao.AccountDao;
@@ -50,10 +49,11 @@ public class AccountServiceImpl implements AccountService {
     public BaseResponse getAccounts(GetAccountDto param) {
 
         if (StringUtils.isNotBlank(param.getAccountName())) {
-            if (param.getAccountName().matches("^[-\\+]?[\\d]*$")) {
+            if (param.getAccountName().matches("^[-\\+]?[\\d]*$") && param.getAccountName().length() < 8) {
+
                 return BaseResponse.OK(accountDao.findByIdAndStatus(Long.parseLong(param.getAccountName()), 0));
             } else {
-                return BaseResponse.OK(accountDao.findByUsername(param.getWxid()));
+                return BaseResponse.OK(accountDao.findByUsername(param.getAccountName()));
             }
         }
 
@@ -167,5 +167,11 @@ public class AccountServiceImpl implements AccountService {
         });
 
         return BaseResponse.OK(accountDtos);
+    }
+
+    @Override
+    public BaseResponse turnover(String start, String end) {
+        List<Map<String, Object>> result = accountDao.findBySql(start, end);
+        return BaseResponse.OK(result);
     }
 }

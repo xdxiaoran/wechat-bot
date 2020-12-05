@@ -15,4 +15,6 @@ import java.util.List;
 public class RentCancelDto {
     private List<Long> accountIds;
     private BigDecimal balance;
+    private Integer costTime;
+    private Boolean isAllCancel;
 }

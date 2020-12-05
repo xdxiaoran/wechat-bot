@@ -17,4 +17,5 @@ public interface AccountService {
 
     BaseResponse getAccountsRent();
 
+    BaseResponse turnover(String start, String end);
 }
