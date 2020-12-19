@@ -75,6 +75,6 @@ public class Constance {
 
     public static Set<String> BLACK_NAME =  Sets.newHashSet("偷登号", "不租", "不能租", "太强", "外挂", "黑机器", "黑ip", "有问题", "嫌疑犯");
 
-    public static Boolean silentMode = true;
+    public static Boolean silentMode = false;
     public static Boolean isCardMode = false;
 }

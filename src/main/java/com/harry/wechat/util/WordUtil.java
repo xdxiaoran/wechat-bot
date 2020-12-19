@@ -64,7 +64,7 @@ public class WordUtil {
 
             String msg = MapUtils.mapToValueString(results);
             String account = getAccounts(words, wxid, accountService, isSvip, message.endsWith("英雄卡"));
-            return "======" + msg + "========\n" + account + "\n 回复编号直接下单";
+            return "======" + msg + "======\r" + account + "\r 回复编号直接下单";
         }
         return null;
     }
@@ -196,8 +196,8 @@ public class WordUtil {
                 } else if (account.getVipLevel() == 1) {
                     msg.append(" VIP");
                 }
-                msg.append("\n英雄列表:\n");
-                msg.append(account.getHeroList() + "\n");
+                msg.append("\r英雄列表:\r");
+                msg.append(account.getHeroList() + "\r");
             } else {
                 msg.append("【" + account.getId() + "】 ");
                 // msg.append(account.getServer() + "-");
@@ -214,7 +214,7 @@ public class WordUtil {
                 } else if (account.getVipLevel() == 1) {
                     msg.append(" VIP");
                 }
-                msg.append("\n");
+                msg.append("\r");
                 // msg.append("- " + account.getPrice() + " rh\n");
             }
         }

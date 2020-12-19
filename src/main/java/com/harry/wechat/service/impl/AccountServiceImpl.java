@@ -2,17 +2,23 @@ package com.harry.wechat.service.impl;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.harry.wechat.config.FunType;
 import com.harry.wechat.dao.AccountDao;
 import com.harry.wechat.dao.OrdersDao;
 import com.harry.wechat.dao.SQLSupporter;
 import com.harry.wechat.dao.UserInfoDao;
 import com.harry.wechat.dto.BaseResponse;
+import com.harry.wechat.dto.server.FriendRes;
+import com.harry.wechat.dto.server.Instruction;
+import com.harry.wechat.dto.server.LoginUser;
 import com.harry.wechat.dto.vo.AccountDto;
 import com.harry.wechat.dto.vo.GetAccountDto;
 import com.harry.wechat.entity.Account;
 import com.harry.wechat.entity.Orders;
 import com.harry.wechat.entity.UserInfo;
 import com.harry.wechat.service.AccountService;
+import com.harry.wechat.service.UserInfoService;
+import com.harry.wechat.util.InstructionUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -44,6 +50,8 @@ public class AccountServiceImpl implements AccountService {
     private AccountDao accountDao;
     @Autowired
     private OrdersDao ordersDao;
+    @Autowired
+    private UserInfoService userInfoService;
 
     @Override
     public BaseResponse getAccounts(GetAccountDto param) {
@@ -67,7 +75,9 @@ public class AccountServiceImpl implements AccountService {
             if (!userInfoOptional.isPresent()) {
                 // todo
                 // do something 通知管理员或刷新联系人列表
-                return BaseResponse.fail("当前联系人列表已过期,请联系管理员");
+                syncFriend();
+                userInfoOptional = userInfoDao.findByWxid(param.getWxid());
+                // return BaseResponse.fail("当前联系人列表已过期,请联系管理员");
             }
 
             UserInfo userInfo = userInfoOptional.get();
@@ -133,6 +143,17 @@ public class AccountServiceImpl implements AccountService {
         accountDao.save(accountOld);
 
         return BaseResponse.OK;
+    }
+
+    protected void syncFriend() {
+        LoginUser loginUser = InstructionUtil.currentUser();
+        if (loginUser != null && StringUtils.isNotBlank(loginUser.getWxid())) {
+            // flag = !flag;
+            FriendRes friendRes = InstructionUtil.postForObject(Instruction.builder().funid(FunType.FRIENDLIST.getFunid()).build(), FriendRes.class);
+            if (friendRes != null && CollectionUtils.isNotEmpty(friendRes.getFdlist())) {
+                userInfoService.syncUserInfo(friendRes.getFdlist());
+            }
+        }
     }
 
     @Override

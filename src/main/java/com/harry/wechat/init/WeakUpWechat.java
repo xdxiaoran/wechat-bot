@@ -54,9 +54,9 @@ public class WeakUpWechat implements ApplicationRunner {
                         if (friendRes != null && CollectionUtils.isNotEmpty(friendRes.getFdlist())) {
                             userInfoService.syncUserInfo(friendRes.getFdlist());
                         }
-                        SocketProperties.sleep(60_000);
+                        SocketProperties.sleep(3_600_000);
                     } else {
-                        SocketProperties.sleep(60_000);
+                        SocketProperties.sleep(3_600_000);
                     }
                 }catch (Exception e){
                     log.info("联系人同步失败");

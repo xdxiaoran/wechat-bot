@@ -118,7 +118,7 @@ public class OrdersServiceImpl implements OrdersService {
             } else if (account.getVipLevel() == 1) {
                 msg.append(" VIP");
             }
-            msg.append("\n英雄列表:\n");
+            msg.append("\r英雄列表:\r");
             // msg.append(account.getHeroList() + "\n");
             // InstructionUtil.sendText(dto.getWxid(), msg.toString());
 
@@ -176,15 +176,15 @@ public class OrdersServiceImpl implements OrdersService {
                 accountDao.save(account);
                 ordersDao.save(order);
 
-                StringBuilder builder = new StringBuilder("结账成功\n");
-                builder.append("本次消费时长: " + cost + " 分钟\n");
-                builder.append("本次消费金额: " + amount + " 元\n");
+                StringBuilder builder = new StringBuilder("结账成功\r");
+                builder.append("本次消费时长: " + cost + " 分钟\r");
+                builder.append("本次消费金额: " + amount + " 元\r");
                 builder.append("账户余额: " + userInfo.getBalance());
 
                 if (userInfo.getBalance().compareTo(BigDecimal.ZERO) == -1) {
                     // 通知
                     // 余额不足
-                    builder.append("\n==================\n您的账户余额不足请及时充值");
+                    builder.append("\r==================\r您的账户余额不足请及时充值");
                 }
                 return BaseResponse.OK(builder.toString());
             } else {
@@ -225,15 +225,15 @@ public class OrdersServiceImpl implements OrdersService {
                 accountDao.save(account);
                 ordersDao.save(order);
 
-                StringBuilder builder = new StringBuilder("结账成功\n");
-                builder.append("本次消费时长: " + cost + " 分钟\n");
-                builder.append("本次消费金额: " + amount + " 元\n");
+                StringBuilder builder = new StringBuilder("结账成功\r");
+                builder.append("本次消费时长: " + cost + " 分钟\r");
+                builder.append("本次消费金额: " + amount + " 元\r");
                 builder.append("账户余额: " + userInfo.getBalance());
 
                 if (userInfo.getBalance().compareTo(BigDecimal.ZERO) == -1) {
                     // 通知
                     // 余额不足
-                    builder.append("\n==================\n您的账户余额不足请及时充值");
+                    builder.append("\r==================\r您的账户余额不足请及时充值");
                 }
                 return BaseResponse.OK(builder.toString());
             }
@@ -276,15 +276,15 @@ public class OrdersServiceImpl implements OrdersService {
                 ordersDao.save(order);
                 userInfoDao.save(userInfo);
 
-                StringBuilder builder = new StringBuilder("结账成功\n");
-                builder.append("本次消费时长: " + cost + " 分钟\n");
-                builder.append("本次消费金额: " + amount + " 元\n");
+                StringBuilder builder = new StringBuilder("结账成功\r");
+                builder.append("本次消费时长: " + cost + " 分钟\r");
+                builder.append("本次消费金额: " + amount + " 元\r");
                 builder.append("账户余额: " + userInfo.getBalance());
 
                 if (userInfo.getBalance().compareTo(BigDecimal.ZERO) == -1) {
                     // 通知
                     // 余额不足
-                    builder.append("\n==================\n您的账户余额不足请及时充值");
+                    builder.append("\r==================\r您的账户余额不足请及时充值");
                 }
                 return BaseResponse.OK(builder.toString());
             } else {
@@ -329,15 +329,15 @@ public class OrdersServiceImpl implements OrdersService {
                     prices.add(order.getAmount());
                 }
 
-                StringBuilder builder = new StringBuilder("结账成功\n");
-                builder.append("本次消费账号: " + orders.size() + " 个\n");
-                builder.append("本次消费共计时长: " + costs + " 分钟\n");
-                builder.append("本次消费共计金额: " + prices + " 元\n");
+                StringBuilder builder = new StringBuilder("结账成功\r");
+                builder.append("本次消费账号: " + orders.size() + " 个\r");
+                builder.append("本次消费共计时长: " + costs + " 分钟\r");
+                builder.append("本次消费共计金额: " + prices + " 元\r");
                 builder.append("账户余额: " + userInfo.getBalance());
                 if (userInfo.getBalance().compareTo(BigDecimal.ZERO) == -1) {
                     // 通知
                     // 余额不足
-                    builder.append("\n==================\n您的账户余额不足请及时充值");
+                    builder.append("\r==================\r您的账户余额不足请及时充值");
                 }
                 return BaseResponse.OK(builder.toString());
             }
@@ -402,9 +402,9 @@ public class OrdersServiceImpl implements OrdersService {
                 accountDao.save(account);
                 ordersDao.save(order);
 
-                StringBuilder builder = new StringBuilder("下号成功\n");
-                builder.append("本次消费时长: " + cost + " 分钟\n");
-                builder.append("本次消费金额: " + amount + " 元\n");
+                StringBuilder builder = new StringBuilder("下号成功\r");
+                builder.append("本次消费时长: " + cost + " 分钟\r");
+                builder.append("本次消费金额: " + amount + " 元\r");
                 builder.append("账户余额: " + userInfo.getBalance());
 
                 InstructionUtil.sendText(userInfo.getWxid(), builder.toString());
@@ -449,9 +449,9 @@ public class OrdersServiceImpl implements OrdersService {
                     userUpdate.add(userInfo);
                     orderUpdate.add(order);
 
-                    StringBuilder builder = new StringBuilder("下号成功\n");
-                    builder.append("本次消费时长: " + cost + " 分钟\n");
-                    builder.append("本次消费金额: " + amount + " 元\n");
+                    StringBuilder builder = new StringBuilder("下号成功\r");
+                    builder.append("本次消费时长: " + cost + " 分钟\r");
+                    builder.append("本次消费金额: " + amount + " 元\r");
                     builder.append("账户余额: " + userInfo.getBalance());
 
                     // InstructionUtil.sendText(userInfo.getWxid(),builder.toString());

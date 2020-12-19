@@ -279,7 +279,7 @@ public class WeChaterviceImpl implements WeChatervice {
             if (Objects.equals(response.getCode(), 200)) {
                 return "下单成功";
             } else {
-                return "下单失败\n" + response.getMessage();
+                return "下单失败\r" + response.getMessage();
             }
             // } else if (Objects.equals("全部下号", msg)) {
         } else if (END_ALL_KEYWORD.stream().anyMatch(msg::contains)) {
