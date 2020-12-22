@@ -20,6 +20,7 @@ import com.harry.wechat.service.OrdersService;
 import com.harry.wechat.service.UserInfoService;
 import com.harry.wechat.service.WeChatervice;
 import com.harry.wechat.util.InstructionUtil;
+import com.harry.wechat.util.SocketProperties;
 import com.harry.wechat.util.WordUtil;
 import com.harry.wechat.util.XmlUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -118,8 +119,8 @@ public class WeChaterviceImpl implements WeChatervice {
 
                     if (result.contains("下单成功")) {
                         InstructionUtil.sendText(baseRes.getWxid(), "请不要提前转账，打完之后转账会自动下号");
-                    }else {
-                        InstructionUtil.sendText(baseRes.getWxid(),result);
+                    } else {
+                        InstructionUtil.sendText(baseRes.getWxid(), result);
                     }
                     return;
                 }
@@ -202,9 +203,10 @@ public class WeChaterviceImpl implements WeChatervice {
                 instruction.setV1(split[0]);
                 instruction.setV4(split[1]);
 
-                InstructionUtil.postForObject(instruction,Object.class);
+                InstructionUtil.postForObject(instruction, Object.class);
 
                 // 更新好友列表
+                SocketProperties.sleep(1);
                 syncFriend();
                 break;
             default:
@@ -213,7 +215,7 @@ public class WeChaterviceImpl implements WeChatervice {
         }
     }
 
-    protected void syncFriend(){
+    protected void syncFriend() {
         LoginUser loginUser = InstructionUtil.currentUser();
         if (loginUser != null && StringUtils.isNotBlank(loginUser.getWxid())) {
             // flag = !flag;

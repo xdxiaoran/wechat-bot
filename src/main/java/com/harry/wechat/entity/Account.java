@@ -26,6 +26,7 @@ public class Account extends BaseEntity {
     private String rankLevelFlexible;
     private Integer rankIndexFlexible;
     private String chessLevel;
+    private Integer chessIndex;
     @Column(name = "hero_list", columnDefinition = "text")
     private String heroList;
     private Integer heroNum;

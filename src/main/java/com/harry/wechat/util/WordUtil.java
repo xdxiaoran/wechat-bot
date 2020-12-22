@@ -99,6 +99,10 @@ public class WordUtil {
                 heros.add(getText(word));
                 return;
             }
+            if (word.getPartOfSpeech().getPos().equals("m")) {
+                modes.add(getText(word));
+                return;
+            }
         });
 
         if (CollectionUtils.isNotEmpty(USER_STATUS.get(wxid))) {
@@ -116,6 +120,12 @@ public class WordUtil {
                 if (CollectionUtils.isEmpty(heros) && word.getPartOfSpeech().getPos().equals("y")) {
                     words.add(word);
                     heros.add(getText(word));
+                    return;
+                }
+                if (CollectionUtils.isEmpty(modes) && word.getPartOfSpeech().getPos().equals("m")) {
+                    words.add(word);
+                    modes.add(getText(word));
+                    // levelIndex.add(INDESX.getOrDefault(getText(word), 3));
                     return;
                 }
             });
@@ -184,9 +194,11 @@ public class WordUtil {
         }
 
         StringBuilder msg = new StringBuilder();
+        boolean isChess = modes.stream().anyMatch("云顶之弈"::contains);
 
         for (int i = 0; i < accounts.size() && i < 10; i++) {
             Account account = accounts.get(i);
+
             if (isHeroMode) {
                 // 英雄卡
                 msg.append(account.getId() + "号 段位: " +
@@ -199,20 +211,29 @@ public class WordUtil {
                 msg.append("\r英雄列表:\r");
                 msg.append(account.getHeroList() + "\r");
             } else {
-                msg.append("【" + account.getId() + "】 ");
-                // msg.append(account.getServer() + "-");
-                msg.append("单双" + account.getRankLevelSingle());
-                if (StringUtils.isNotBlank(account.getRankLevelFlexible())) {
-                    msg.append("-灵活" + account.getRankLevelFlexible());
-                }
-                if (isSvip) {
-                    msg.append("-等级 " + account.getLevel());
-                    msg.append(" -英雄数量 " + account.getHeroNum());
-                }
-                if (account.getVipLevel() == 2) {
-                    msg.append(" SVIP");
-                } else if (account.getVipLevel() == 1) {
-                    msg.append(" VIP");
+                if (isChess) {
+                    msg.append("【" + account.getId() + "】 ");
+                    if (CollectionUtils.isEmpty(servers)){
+                        msg.append(account.getServer() + " ");
+                    }
+                    msg.append("云顶-");
+                    msg.append(account.getChessLevel());
+                } else {
+                    msg.append("【" + account.getId() + "】 ");
+                    // msg.append(account.getServer() + "-");
+                    msg.append("单双" + account.getRankLevelSingle());
+                    if (StringUtils.isNotBlank(account.getRankLevelFlexible())) {
+                        msg.append("-灵活" + account.getRankLevelFlexible());
+                    }
+                    if (isSvip) {
+                        msg.append("-等级 " + account.getLevel());
+                        msg.append(" -英雄数量 " + account.getHeroNum());
+                    }
+                    if (account.getVipLevel() == 2) {
+                        msg.append(" SVIP");
+                    } else if (account.getVipLevel() == 1) {
+                        msg.append(" VIP");
+                    }
                 }
                 msg.append("\r");
                 // msg.append("- " + account.getPrice() + " rh\n");

@@ -8,6 +8,7 @@ import com.harry.wechat.dao.OrdersDao;
 import com.harry.wechat.dao.SQLSupporter;
 import com.harry.wechat.dao.UserInfoDao;
 import com.harry.wechat.dto.BaseResponse;
+import com.harry.wechat.dto.server.FriendDto;
 import com.harry.wechat.dto.server.FriendRes;
 import com.harry.wechat.dto.server.Instruction;
 import com.harry.wechat.dto.server.LoginUser;
@@ -75,16 +76,28 @@ public class AccountServiceImpl implements AccountService {
             if (!userInfoOptional.isPresent()) {
                 // todo
                 // do something 通知管理员或刷新联系人列表
-                syncFriend();
-                userInfoOptional = userInfoDao.findByWxid(param.getWxid());
-                // return BaseResponse.fail("当前联系人列表已过期,请联系管理员");
-            }
+                // syncFriend();
 
-            UserInfo userInfo = userInfoOptional.get();
-            if (userInfo.getStatus() != 0) {
-                return BaseResponse.fail("");
+                FriendDto friendDto = new FriendDto();
+                friendDto.setName("未同步");
+                friendDto.setWxid(param.getWxid());
+                UserInfo userInfo = UserInfo.of(friendDto);
+
+                userInfoDao.save(userInfo);
+
+                // userInfoOptional = userInfoDao.findByWxid(param.getWxid());
+                // return BaseResponse.fail("当前联系人列表已过期,请联系管理员");
+                if (userInfo.getStatus() != 0) {
+                    return BaseResponse.fail("");
+                }
+                level = userInfo.getType();
+            } else {
+                UserInfo userInfo = userInfoOptional.get();
+                if (userInfo.getStatus() != 0) {
+                    return BaseResponse.fail("");
+                }
+                level = userInfo.getType();
             }
-            level = userInfo.getType();
 
             sql.append(" and status = 0");
         }
@@ -100,11 +113,37 @@ public class AccountServiceImpl implements AccountService {
             sql.append(" and ( " + collect + ") ");
         }
 
-        if (CollectionUtils.isNotEmpty(param.getModes()) && CollectionUtils.isNotEmpty(param.getLevelIndex())) {
+        if (CollectionUtils.isNotEmpty(param.getModes())) {
             List<String> indexs = Lists.newArrayList();
-            String levels = param.getLevelIndex().stream().map(String::valueOf).collect(Collectors.joining(","));
+            String levels = null;
             // String levels = String.join(",", param.getLevelIndex());
-            param.getModes().forEach(mode -> {
+            if (CollectionUtils.isNotEmpty(param.getLevelIndex())) {
+                levels = param.getLevelIndex().stream().map(String::valueOf).collect(Collectors.joining(","));
+            }
+
+
+            for (String mode : param.getModes()) {
+                if (StringUtils.isBlank(levels)) {
+                    if (mode.equals("云顶之弈")) {
+                        indexs.add(" chess_index is not null");
+                    }
+                } else {
+                    if (mode.equals("单双排位")) {
+                        indexs.add(" rank_index_single in (" + levels + ")");
+                    }
+                    if (mode.equals("灵活排位")) {
+                        // rank_index_flexible
+                        indexs.add(" rank_index_flexible in (" + levels + ")");
+                    }
+                    if (mode.equals("云顶之弈")) {
+                        //    chess_index
+                        indexs.add(" chess_index in (" + levels + ")");
+                    }
+                }
+
+            }
+
+            /*param.getModes().forEach(mode -> {
                 if (mode.equals("单双排位")) {
                     indexs.add(" rank_index_single in (" + levels + ")");
                 }
@@ -116,8 +155,14 @@ public class AccountServiceImpl implements AccountService {
                     //    chess_index
                     indexs.add(" chess_index in (" + levels + ")");
                 }
-            });
-            sql.append(" and (" + String.join(" or ", indexs) + ")");
+            });*/
+            if (CollectionUtils.isNotEmpty(indexs)) {
+                sql.append(" and (" + String.join(" or ", indexs) + ")");
+            }
+
+            if (!param.getModes().stream().anyMatch("云顶之弈"::contains)) {
+                sql.append(" and chess_index is null");
+            }
 
         }
 
