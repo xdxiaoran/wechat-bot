@@ -181,6 +181,10 @@ public class AccountServiceImpl implements AccountService {
             accountOld = new Account();
         } else {
             accountOld = accountDao.getOne(dto.getId());
+
+            if (accountOld.getStatus() == 1 && dto.getStatus() != 1){
+                return BaseResponse.fail("当前账号正在出租中,请不要修改状态");
+            }
         }
 
         BeanUtils.copyProperties(dto, accountOld);
