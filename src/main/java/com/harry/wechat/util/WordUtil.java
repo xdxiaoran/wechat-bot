@@ -1,6 +1,5 @@
 package com.harry.wechat.util;
 
-import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -15,12 +14,12 @@ import org.apdplat.word.segmentation.Word;
 import org.apdplat.word.tagging.PartOfSpeechTagging;
 import org.apdplat.word.tagging.SynonymTagging;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.harry.wechat.util.Constance.*;
+import static com.harry.wechat.util.Constance.INDESX;
+import static com.harry.wechat.util.Constance.USER_STATUS;
 
 /**
  * @author Harry
@@ -54,7 +53,7 @@ public class WordUtil {
         });
 
         if (results.isEmpty()) {
-            // this.api().sendText(message.getFromUserName(), "机器人已完成升级，欢迎大家体验！\n 请输入大区、段位、影响来搜索账号");
+            // this.api().sendText(message.getFromUserName(), "机器人已完成升级，欢迎大家体验！\n 请输入大区、段位、英雄来搜索账号");
         } else {
 
             if (words.stream().filter(w -> Objects.equals(w.getPartOfSpeech().getPos(), "m")).anyMatch(w -> w.getText().matches("^[-\\+]?[\\d]*$"))) {
@@ -201,7 +200,9 @@ public class WordUtil {
 
             if (isHeroMode) {
                 // 英雄卡
-                msg.append(account.getId() + "号 段位: " +
+                msg.append(account.getId()+" 号");
+                msg.append(account.getServer());
+                msg.append(" 段位: " +
                         (StringUtils.isNotBlank(account.getRankLevelSingle()) ? account.getRankLevelSingle() : "无"));
                 if (account.getVipLevel() == 2) {
                     msg.append(" SVIP");

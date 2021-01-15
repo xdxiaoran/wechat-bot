@@ -80,6 +80,7 @@ public class AccountServiceImpl implements AccountService {
 
                 FriendDto friendDto = new FriendDto();
                 friendDto.setName("未同步");
+                friendDto.setRemark("未同步");
                 friendDto.setWxid(param.getWxid());
                 UserInfo userInfo = UserInfo.of(friendDto);
 
@@ -182,12 +183,19 @@ public class AccountServiceImpl implements AccountService {
         } else {
             accountOld = accountDao.getOne(dto.getId());
 
-            if (accountOld.getStatus() == 1 && dto.getStatus() != 1){
+            if (accountOld.getStatus() == 1 && dto.getStatus() != 1) {
                 return BaseResponse.fail("当前账号正在出租中,请不要修改状态");
             }
         }
 
         BeanUtils.copyProperties(dto, accountOld);
+
+        if (accountOld.getChessLevel().equals("-1")) {
+            accountOld.setChessLevel(null);
+        }
+        if (accountOld.getChessIndex() == -1) {
+            accountOld.setChessIndex(null);
+        }
 
         accountDao.save(accountOld);
 

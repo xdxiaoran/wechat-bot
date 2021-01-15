@@ -111,8 +111,11 @@ public class OrdersServiceImpl implements OrdersService {
             InstructionUtil.sendText(dto.getWxid(), account.getUsername() + "---" + account.getPassword());
             // 发送英雄卡信息
             StringBuilder msg = new StringBuilder();
-            msg.append(account.getId() + "号 段位: " +
-                    (StringUtils.isNotBlank(account.getRankLevelSingle()) ? account.getRankLevelSingle() : "无"));
+            msg.append(account.getId() + "号");
+            msg.append(account.getServer());
+            msg.append(" 昵称: ");
+            msg.append(account.getNickName());
+            msg.append(" 段位: " + (StringUtils.isNotBlank(account.getRankLevelSingle()) ? account.getRankLevelSingle() : "无"));
             if (account.getVipLevel() == 2) {
                 msg.append(" SVIP");
             } else if (account.getVipLevel() == 1) {

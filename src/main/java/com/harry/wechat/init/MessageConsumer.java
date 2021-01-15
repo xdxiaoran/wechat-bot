@@ -36,13 +36,14 @@ public class MessageConsumer implements ApplicationRunner {
                     try {
                         BaseRes res = SocketProperties.messages.take();
                         // log.info(res.toString());
-                        if (Objects.equals(String.valueOf(InstructionUtil.currentUser().getWechatId()),res.getWechatId())){
+                        if (Objects.equals(String.valueOf(InstructionUtil.currentUser().getWechatId()), res.getWechatId())) {
                             weChatervice.receiveMsg(res);
-                        }else {
+                        } else {
                             log.info("非当前微信消息");
                         }
 
                     } catch (Exception e) {
+                        log.error("", e);
                         log.error("读取消息出错");
                     }
                 } else {

@@ -109,7 +109,18 @@ public class UserInfoServiceImpl implements UserInfoService {
     public UserInfo getUserByWxid(String wxid) {
         Optional<UserInfo> userInfoOptional = userInfoDao.findByWxid(wxid);
 
-        return userInfoOptional.orElseGet(null);
+        if (userInfoOptional.isPresent()) {
+            return userInfoOptional.get();
+        } else {
+            FriendDto friendDto = new FriendDto();
+            friendDto.setName("未同步");
+            friendDto.setRemark("未同步");
+            friendDto.setWxid(wxid);
+            UserInfo userInfo = UserInfo.of(friendDto);
+
+            userInfoDao.save(userInfo);
+            return userInfo;
+        }
     }
 
     @Override

@@ -1,9 +1,11 @@
 package com.harry.wechat.service.impl;
 
+import com.google.common.collect.Maps;
 import com.harry.wechat.config.CardConfig;
 import com.harry.wechat.config.FunType;
 import com.harry.wechat.dao.AccountDao;
 import com.harry.wechat.dao.ConfigDao;
+import com.harry.wechat.dao.OrdersDao;
 import com.harry.wechat.dto.BaseResponse;
 import com.harry.wechat.dto.server.BaseRes;
 import com.harry.wechat.dto.server.FriendRes;
@@ -14,6 +16,7 @@ import com.harry.wechat.dto.vo.RechargeDto;
 import com.harry.wechat.dto.vo.RentDto;
 import com.harry.wechat.entity.Account;
 import com.harry.wechat.entity.Config;
+import com.harry.wechat.entity.Orders;
 import com.harry.wechat.entity.UserInfo;
 import com.harry.wechat.service.AccountService;
 import com.harry.wechat.service.OrdersService;
@@ -30,12 +33,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.harry.wechat.util.Constance.*;
+import static com.harry.wechat.util.DateUtils.getTimeDifference;
 import static com.harry.wechat.util.WordUtil.transferAmount;
 import static com.harry.wechat.util.WordUtil.transferId;
 
@@ -63,6 +68,8 @@ public class WeChaterviceImpl implements WeChatervice {
 
     @Autowired
     private CardConfig cardConfig;
+    @Autowired
+    private OrdersDao ordersDao;
 
     @Override
     public void receiveMsg(BaseRes baseRes) {
@@ -73,6 +80,11 @@ public class WeChaterviceImpl implements WeChatervice {
         if (baseRes.getWxid().endsWith("@chatroom") && !userInfo.getIsRentGroup()) {
             return;
         }
+
+        // demo
+        // if (!userInfo.getRemarkName().equals("机器人测试")){
+        //     return;
+        // }
         // 偷登号检测
         // 关键词检测
 
@@ -82,7 +94,7 @@ public class WeChaterviceImpl implements WeChatervice {
 
                 initConfig();
 
-                if (BLACK_NAME.stream().anyMatch(userInfo.getRemarkName()::contains)) {
+                if (StringUtils.isNotBlank(userInfo.getRemarkName()) && BLACK_NAME.stream().anyMatch(userInfo.getRemarkName()::contains)) {
                     return;
                 }
 
@@ -109,7 +121,7 @@ public class WeChaterviceImpl implements WeChatervice {
                     }
                 }
 
-                String result = action(baseRes.getWxid(), baseRes.getContent());
+                String result = action(baseRes.getWxid(), baseRes.getContent(),userInfo.getId());
 
                 if (StringUtils.isBlank(result)) {
                     return;
@@ -208,6 +220,8 @@ public class WeChaterviceImpl implements WeChatervice {
                 // 更新好友列表
                 SocketProperties.sleep(1);
                 syncFriend();
+
+                InstructionUtil.sendText(baseRes.getWxid(),"请输入大区、段位、英雄来搜索账号");
                 break;
             default:
                 log.info("其它消息");
@@ -248,12 +262,14 @@ public class WeChaterviceImpl implements WeChatervice {
 
 
     /**
+     * @param wxid
      * @param msg
+     * @param userId
      * @return "0" 进行下一步
      * "" 不做任何处理，流程终止
      * 字符串，发送到微信
      */
-    public String action(String wxid, String msg) {
+    public String action(String wxid, String msg, Long userId) {
 
 
         if (msg.matches("^[-\\+]?[\\d]*$")) {
@@ -261,6 +277,11 @@ public class WeChaterviceImpl implements WeChatervice {
             if (Long.parseLong(msg) < 100) {
                 // 特殊编号
                 // 暂不做处理
+
+                if (Long.parseLong(msg) == 2){
+                    getOrders(userId,wxid);
+                }
+
                 return "";
             }
 
@@ -389,11 +410,43 @@ public class WeChaterviceImpl implements WeChatervice {
 
         } else if (msg.contains("比尔特沃夫") || msg.contains("皮儿吉沃特")) {
             return "需要电5皮尔特沃夫还是  网1比尔吉沃特";
+        }else if (msg.equals("订单列表")){
+            getOrders(userId,wxid);
+            return "";
         }
 
         return "0";
     }
 
+    private void getOrders(Long userId,String wxid){
+        List<Orders> orders = ordersDao.findByUserIdAndStatus(userId, "1");
+
+        List<Account> accounts = accountDao.findByIdIn(orders.stream().map(Orders::getAccountId).collect(Collectors.toList()));
+
+        Map<Long, Account> accountMap = Maps.uniqueIndex(accounts, Account::getId);
+
+
+        StringBuilder builder = new StringBuilder();
+        builder.append("当前共有 ");
+        builder.append(orders.size());
+        builder.append("个 账号正在租赁中\r");
+        Date date = new Date();
+        orders.forEach( order -> {
+            Account account = accountMap.get(order.getAccountId());
+            builder.append("【"+order.getAccountId()+"】 ");
+            builder.append(account.getServer());
+            builder.append(" ");
+            builder.append(account.getNickName());
+            int times = getTimeDifference(date, order.getStartTime());
+            builder.append(" 时长 ");
+            builder.append(times);
+            builder.append(" 分钟");
+        });
+
+        InstructionUtil.sendText(wxid,builder.toString());
+
+
+    }
 
     private String rent(RentDto dto) {
         BaseResponse response = ordersService.rent(dto);
