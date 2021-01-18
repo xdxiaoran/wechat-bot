@@ -34,14 +34,16 @@ public class LoadDict implements ApplicationRunner {
 
         File fileDic = new File(selfDic);
         if (fileDic.exists()) {
+            log.info("加载自定义字典 dic : {}", selfDic);
             WordConfTools.set("part.of.speech.dic.path", "classpath:part_of_speech_dic.txt," + selfDic);
+            // WordConfTools.set("part.of.speech.dic.path", selfDic);
         }
         File fileSyn = new File(selfSynonym);
         if (fileSyn.exists()) {
-            WordConfTools.get("word.synonym.path", "classpath:word_synonym.txt," + selfSynonym);
+            log.info("加载自定义字典 synonym : {}", selfSynonym);
+            WordConfTools.set("word.synonym.path", "classpath:word_synonym.txt," + selfSynonym);
 
         }
-
 
         DictionaryFactory.reload();
         analyse("init");

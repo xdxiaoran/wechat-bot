@@ -197,6 +197,29 @@ public class AccountServiceImpl implements AccountService {
             accountOld.setChessIndex(null);
         }
 
+        if (accountOld.getRankLevelSingle().contains("无段位")){
+            accountOld.setRankLevelSingle(null);
+        }
+
+        if (accountOld.getRankIndexSingle() == -1){
+            accountOld.setRankIndexSingle(null);
+        }
+
+        if (accountOld.getRankLevelFlexible().contains("无段位")){
+            accountOld.setRankLevelFlexible(null);
+        }
+
+        if (accountOld.getRankIndexFlexible() == -1){
+            accountOld.setRankIndexFlexible(null);
+        }
+
+        if (StringUtils.isBlank(accountOld.getPrice())){
+            accountOld.setPrice("1");
+        }
+
+        if (accountOld.getVipLevel() == null){
+            accountOld.setVipLevel(0);
+        }
         accountDao.save(accountOld);
 
         return BaseResponse.OK;

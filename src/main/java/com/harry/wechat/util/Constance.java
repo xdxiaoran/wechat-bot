@@ -63,9 +63,11 @@ public class Constance {
         {
             put("黑铁", 0);
             put("青铜", 1);
+            put("黄铜", 1);
             put("白银", 2);
             put("黄金", 3);
             put("铂金", 4);
+            put("白金", 4);
             put("钻石", 5);
             put("大师", 6);
             put("王者", 7);

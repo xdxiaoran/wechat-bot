@@ -312,4 +312,9 @@ public class WordUtil {
         return "0";
     }
 
+    public static void main(String[] args) {
+        List<Word> wors = analyse("白银号");
+        System.out.println();
+    }
+
 }

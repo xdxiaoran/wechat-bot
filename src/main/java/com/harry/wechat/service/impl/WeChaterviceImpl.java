@@ -440,7 +440,7 @@ public class WeChaterviceImpl implements WeChatervice {
             int times = getTimeDifference(date, order.getStartTime());
             builder.append(" 时长 ");
             builder.append(times);
-            builder.append(" 分钟");
+            builder.append(" 分钟\r");
         });
 
         InstructionUtil.sendText(wxid,builder.toString());
