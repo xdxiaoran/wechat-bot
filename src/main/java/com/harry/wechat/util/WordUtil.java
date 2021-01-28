@@ -313,7 +313,8 @@ public class WordUtil {
     }
 
     public static void main(String[] args) {
-        List<Word> wors = analyse("白银号");
+        List<Word> wors = analyse("战争");
+        List<Word> wors1 = analyse("战争学院");
         System.out.println();
     }
 
